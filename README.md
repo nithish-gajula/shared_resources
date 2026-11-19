@@ -10,7 +10,8 @@ This repository provides pre-built, production-ready debug APKs and test resourc
 
 | Artifact | Version | Release Date | Architecture | Key Features / Changelog |
 | :--- | :--- | :--- | :--- | :--- |
-| [**`app-debug-v1.1.apk`**](file:///home/icps1101/Desktop/Omega-REA/shared_resources/app-debug-v1.1.apk) | **v1.1** | **2026-11-18** | `arm64-v8a` (AArch64) | **Selectable Dual Native Engine Architecture**: Allows choosing between `libomega-timestamp.so` (generated) and `libomega.so` (original reference) in `LauncherActivity`. Includes responsive 360° semicircular radar threat alerts and un-truncated 67,224-byte telemetry frames. |
+| [**`app-debug-v1.2.apk`**](file:///home/icps1101/Desktop/Omega-REA/shared_resources/app-debug-v1.2.apk) | **v1.2** | **2026-11-19** | `arm64-v8a` (AArch64) | **Item Throwables ESP Fix**: Resolves Stung, Grenade, Smoke, and Molotov ground loot classification in `sock64b` and `libomega`. Ground throwables now render cleanly as items in white text with distance ("Stung", "Grenade", "Smoke", "Molotov") responding to `WeaponView` item toggles, while separating live airborne projectile threat warnings. |
+| [**`app-debug-v1.1.apk`**](file:///home/icps1101/Desktop/Omega-REA/shared_resources/app-debug-v1.1.apk) | **v1.1** | 2026-11-18 | `arm64-v8a` (AArch64) | **Selectable Dual Native Engine Architecture**: Allows choosing between `libomega-timestamp.so` (generated) and `libomega.so` (original reference) in `LauncherActivity`. Includes responsive 360° semicircular radar threat alerts and un-truncated 67,224-byte telemetry frames. |
 | [**`app-debug-v1.0.apk`**](file:///home/icps1101/Desktop/Omega-REA/shared_resources/app-debug-v1.0.apk) | **v1.0** | 2026-11-18 | `arm64-v8a` (AArch64) | Baseline production release: Initial decoupled root daemon (`sock64b`) and hardware Canvas overlay (`libomega.so`). |
 
 ---
