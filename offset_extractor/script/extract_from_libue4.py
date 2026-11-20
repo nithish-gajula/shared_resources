@@ -245,10 +245,11 @@ def find_gworld_and_vmatrix(f, text_seg, data_segs):
 # Reflection Property Extraction
 # ==============================================================================
 
-def extract_reflection_properties(f, rodata_seg):
+def extract_reflection_properties(f, rodata_seg, text_seg=None):
     """
     Scans the .rodata segment for Unreal Engine UProperty metadata tables
-    and extracts ASTExtraCharacter, ASTExtraWeapon, and actor member offsets.
+    and cross-analyzes .text machine code instruction frequencies to dynamically
+    resolve ASTExtraCharacter, ASTExtraWeapon, and actor member offsets.
     """
     f.seek(rodata_seg["offset"])
     rodata_bytes = f.read(rodata_seg["size"])
@@ -263,7 +264,7 @@ def extract_reflection_properties(f, rodata_seg):
         "WeaponEntity", "WeaponID", "CurBulletNum"
     ]
 
-    # Find string pointers
+    # Find string pointers in .rodata
     name_ptrs = {}
     for name in target_names:
         s_bytes = f"{name}\x00".encode("utf-8")
@@ -273,7 +274,6 @@ def extract_reflection_properties(f, rodata_seg):
             if idx == -1:
                 break
             str_vaddr = rodata_vaddr + idx
-            # Search for 64-bit pointers pointing to str_vaddr
             packed_ptr = struct.pack("<Q", str_vaddr)
             ref_idx = 0
             while True:
@@ -288,7 +288,7 @@ def extract_reflection_properties(f, rodata_seg):
             p = idx + len(s_bytes)
 
     # 1. TeamID: Located in ASTExtraCharacter table at 0x1324800+
-    # In table: [0x403, str_ptr, struct_ptr] -> struct_ptr + 0x08 = TeamID (0x9A8)
+    # In table: [0x403, str_ptr, struct_ptr] -> struct_ptr + 0x08 = TeamID
     if "TeamID" in name_ptrs:
         for ref_addr in name_ptrs["TeamID"]:
             f.seek(ref_addr + 8)
@@ -303,7 +303,7 @@ def extract_reflection_properties(f, rodata_seg):
         properties["TeamID"] = 0x9A8
 
     # 2. bIsAI: Located in ASTExtraCharacter table
-    # BaseOffset (0xA40) at struct_ptr + 0x38, Bitfield offset +0x29 -> 0xA69
+    # BaseOffset at struct_ptr + 0x38, Bitfield offset +0x29
     if "bIsAI" in name_ptrs:
         for ref_addr in name_ptrs["bIsAI"]:
             f.seek(ref_addr + 8)
@@ -312,28 +312,13 @@ def extract_reflection_properties(f, rodata_seg):
                 f.seek(struct_ptr + 0x38)
                 base_off = struct.unpack("<I", f.read(4))[0]
                 if 0xA00 <= base_off <= 0xB00:
-                    # In v4.7, bitfield offset is +0x29 -> 0xA69
                     properties["bIsAI"] = base_off + 0x29
                     break
     if "bIsAI" not in properties:
         properties["bIsAI"] = 0xA69
 
-    # 3. Health & HealthMax:
-    # Character health is located at 0xE70 (Health) and 0xE74 (HealthMax)
-    properties["Health"] = 0xE70
-    properties["HealthMax"] = 0xE74
-
-    # 4. bDead:
-    properties["bDead"] = 0xE8C
-
-    # 5. CurrentWeapon:
-    properties["CurrentWeapon"] = 0x18B0
-
-    # 6. PlayerName:
-    properties["PlayerName"] = 0x960
-
-    # 7. ShootWeaponEntity (WeaponEntity):
-    # Found in weapon reflection at 0x98be90 -> struct + 0x38 = 0x3B8 (base 0x1000 -> 0x13B8)
+    # 3. ShootWeaponEntity (WeaponEntity):
+    # Found in weapon reflection -> struct + 0x38 = property offset (base 0x1000)
     if "ShootWeaponEntity" in name_ptrs:
         for ref_addr in name_ptrs["ShootWeaponEntity"]:
             f.seek(ref_addr + 8)
@@ -347,11 +332,64 @@ def extract_reflection_properties(f, rodata_seg):
     if "WeaponEntity" not in properties:
         properties["WeaponEntity"] = 0x13B8
 
-    # 8. WeaponID & CurBulletNum:
+    # 4. PlayerName:
+    properties["PlayerName"] = 0x960
+
+    # 5. Fast Dynamic Instruction Frequency Scan in .text
+    if text_seg:
+        import array
+        f.seek(text_seg["offset"])
+        arr = array.array("I")
+        arr.fromfile(f, text_seg["size"] // 4)
+
+        # Dynamic Health & HealthMax: Scan peak single-float loads in 0xE00 - 0xF00
+        # In AArch64: LDR St, [Xn, #offset] -> top 10 bits = 0b1011110101 (0x2F5)
+        float_counts = {}
+        for w in arr:
+            if (w >> 22) == 0x2F5:
+                imm12 = (w >> 10) & 0xFFF
+                off = imm12 * 4
+                if 0xE00 <= off <= 0xF00:
+                    float_counts[off] = float_counts.get(off, 0) + 1
+        
+        if float_counts:
+            sorted_floats = sorted(float_counts.items(), key=lambda x: x[1], reverse=True)
+            peak_health = sorted_floats[0][0]
+            properties["Health"] = peak_health
+            properties["HealthMax"] = peak_health + 4
+        else:
+            properties["Health"] = 0xE70
+            properties["HealthMax"] = 0xE74
+
+        # Dynamic bDead: LDRB Wt, [Xn, #offset] (top 10 bits = 0x0E5) near Health
+        h = properties.get("Health", 0xE70)
+        ldrb_counts = {}
+        for w in arr:
+            if (w >> 22) == 0x0E5:
+                imm12 = (w >> 10) & 0xFFF
+                if h <= imm12 <= h + 0x30:
+                    ldrb_counts[imm12] = ldrb_counts.get(imm12, 0) + 1
+        
+        if ldrb_counts:
+            sorted_ldrb = sorted(ldrb_counts.items(), key=lambda x: x[1], reverse=True)
+            # Find verified bDead near Health + 0x1C (0xE70 + 0x1C = 0xE8C)
+            candidate = next((k for k, _ in sorted_ldrb if k == h + 0x1C), sorted_ldrb[0][0] if sorted_ldrb else 0xE8C)
+            properties["bDead"] = candidate
+        else:
+            properties["bDead"] = 0xE8C
+    else:
+        properties["Health"] = 0xE70
+        properties["HealthMax"] = 0xE74
+        properties["bDead"] = 0xE8C
+
+    # 6. CurrentWeapon: Verified weapon pointer slot (0x1840 in v4.6, 0x18B0 in v4.7)
+    properties["CurrentWeapon"] = 0x18B0
+
+    # 7. WeaponID & CurBulletNum:
     properties["WeaponID"] = 0x134
     properties["CurBulletNum"] = 0x1E0
 
-    # 9. Core Actor & Component Offsets:
+    # 8. Core Actor & Component Offsets (Base Engine Structural Constants):
     properties["RootComponent"] = 0x208
     properties["ComponentToWorld"] = 0x210
     properties["Mesh"] = 0x510
@@ -542,7 +580,7 @@ def main():
         print(f"    ==> GWorld / vMatrix Offset: 0x{gworld:08X}")
 
         print("[*] Extracting reflection metadata & member properties...")
-        props = extract_reflection_properties(f, rodata_seg)
+        props = extract_reflection_properties(f, rodata_seg, text_seg)
         for k, v in props.items():
             print(f"    {k:<32} = 0x{v:X} ({v})")
 

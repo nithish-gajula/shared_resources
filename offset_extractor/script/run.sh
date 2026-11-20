@@ -21,10 +21,24 @@ if [ "$#" -eq 0 ]; then
     echo " OMEGA-REA MULTI-TARGET OFFSET EXTRACTION: BATCH AUTO-DISCOVERY MODE"
     echo "================================================================================"
     
-    # 1. Run sock64b / xalldatq daemon extraction
-    echo ""
-    echo "[*] Phase 1: Scanning daemon payloads (sock64b / xalldatq archives)..."
-    python3 "$SOCK_EXTRACTOR"
+    # 1. Run sock64b / xalldatq daemon extraction only if archives exist
+    HAVE_DAEMON=0
+    for cand in "$SCRIPT_DIR/../original_files"/*.zip "$SCRIPT_DIR/../original_files"/sock*; do
+        if [ -f "$cand" ]; then
+            HAVE_DAEMON=1
+            break
+        fi
+    done
+
+    if [ "$HAVE_DAEMON" -eq 1 ]; then
+        echo ""
+        echo "[*] Phase 1: Scanning daemon payloads (sock64b / xalldatq archives)..."
+        python3 "$SOCK_EXTRACTOR"
+    else
+        echo ""
+        echo "[i] Phase 1 Skipped: No daemon archives (xalldatq-*.zip) found in original_files/."
+        echo "    Operating in standalone direct libUE4.so analysis mode."
+    fi
 
     # 2. Run libUE4.so extraction if reconstructed reference exists in Originals/
     echo ""
@@ -44,7 +58,7 @@ if [ "$#" -eq 0 ]; then
     fi
 
     echo ""
-    echo "[+] Batch extraction complete. Reports saved in 'generated_offsets/'."
+    echo "[+] Extraction run complete. Output reports saved in 'generated_offsets/'."
 else
     TARGET="$1"
     if [ ! -f "$TARGET" ]; then
