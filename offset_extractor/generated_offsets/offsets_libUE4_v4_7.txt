@@ -1,0 +1,89 @@
+================================================================================
+ libUE4.so REVERSE ENGINEERING ANALYSIS: EXTRACTED OFFSETS REPORT
+================================================================================
+Source Binary File       : libUE4_v4_7.so
+Source Absolute Path     : /home/icps1101/Desktop/Omega-REA/Originals/libUE4_v4_7.so
+Analysis Timestamp       : 2026-11-20 19:57:06
+Binary Size              : 256,500,878 bytes
+SHA-256 Hash             : 29203450537e9a5b75128077f74ecb0dc8530d6e49aa4f900c1eac46cf9b11e3
+Engine Target            : Unreal Engine 4.23+ (AArch64 Reconstructed ELF)
+================================================================================
+
+1. GLOBAL ENGINE BASE ADDRESSES (vMatrix & GNames)
+--------------------------------------------------------------------------------
+Target Variable / Symbol         | Virtual / Static Offset | Status
+--------------------------------------------------------------------------------
+viewMatrixOffset (vMatrix)       | 0x0F35CE70       | Verified In-Memory Anchor
+gWorldOffset (UWorld)                | 0x0F35CE70       | Verified In-Memory Anchor
+gNamesOffset (GNames)                | 0x0EDDC120       | FNamePool Anchor Resolved
+--------------------------------------------------------------------------------
+
+2. CHARACTER STATE & ACTOR OFFSETS (ASTExtraCharacter)
+--------------------------------------------------------------------------------
+Field / Attribute                | Hex Offset       | Decimal Value
+--------------------------------------------------------------------------------
+ASTExtraCharacter_TeamID         | 0x0009A8         | 2472
+ASTExtraCharacter_bIsAI          | 0x000A69         | 2665
+ASTExtraCharacter_Health         | 0x000E70         | 3696
+ASTExtraCharacter_HealthMax      | 0x000E74         | 3700
+ASTExtraCharacter_bDead          | 0x000E8C         | 3724
+ASTExtraCharacter_CurrentWeapon  | 0x0018B0         | 6320
+ASTExtraCharacter_PlayerName     | 0x000960         | 2400
+--------------------------------------------------------------------------------
+
+3. WEAPON & EQUIPMENT OFFSETS (ASTExtraWeapon)
+--------------------------------------------------------------------------------
+Field / Attribute                | Hex Offset       | Decimal Value
+--------------------------------------------------------------------------------
+ASTExtraWeapon_WeaponEntity      | 0x0013B8         | 5048
+ASTExtraWeapon_WeaponID          | 0x000134         | 308
+ASTExtraWeapon_CurBulletNum      | 0x0001E0         | 480
+--------------------------------------------------------------------------------
+
+4. ACTOR & SCENECOMPONENT HIERARCHY
+--------------------------------------------------------------------------------
+Field / Attribute                | Hex Offset       | Decimal Value
+--------------------------------------------------------------------------------
+AActor_RootComponent             | 0x000208         | 520
+USceneComponent_ComponentToWorld | 0x000210         | 528
+ACharacter_Mesh                  | 0x000510         | 1296
+USkeletalMeshComponent_BoneArray | 0x000A30         | 2608
+--------------------------------------------------------------------------------
+
+================================================================================
+ READY-TO-PASTE C++ SOURCE FOR sock64b-project/include/Offsets.h
+================================================================================
+
+/**
+ * Valid UE4 Base Offsets extracted from libUE4_v4_7.so:
+ * - BGMI (com.pubg.imobile): vMatrix=0x0F35CE70, GNames=0x0EDDC120
+ */
+static const GameOffsets SUPPORTED_GAMES[] = {
+    { "com.pubg.imobile",   GAME_BGMI,     0x0F35CE70, 0x0EDDC120, 0x0F35CE70 },
+};
+
+namespace UE4Offsets {
+    // Player State, Health & Attributes
+    constexpr uintptr_t ASTExtraCharacter_TeamID        = 0x9A8;
+    constexpr uintptr_t ASTExtraCharacter_bIsAI         = 0xA69;
+    constexpr uintptr_t ASTExtraCharacter_Health        = 0xE70;
+    constexpr uintptr_t ASTExtraCharacter_HealthMax     = 0xE74;
+    constexpr uintptr_t ASTExtraCharacter_bDead         = 0xE8C;
+    constexpr uintptr_t ASTExtraCharacter_CurrentWeapon = 0x18B0;
+    constexpr uintptr_t ASTExtraCharacter_PlayerName    = 0x960;
+
+    // Weapon Structs
+    constexpr uintptr_t ASTExtraWeapon_WeaponEntity     = 0x13B8;
+    constexpr uintptr_t ASTExtraWeapon_WeaponID         = 0x134;
+    constexpr uintptr_t ASTExtraWeapon_CurBulletNum     = 0x1E0;
+
+    // Core Components
+    constexpr uintptr_t AActor_RootComponent            = 0x208;
+    constexpr uintptr_t USceneComponent_ComponentToWorld = 0x210;
+    constexpr uintptr_t ACharacter_Mesh                 = 0x510;
+    constexpr uintptr_t USkeletalMeshComponent_BoneArray = 0xA30;
+}
+
+================================================================================
+ END OF REPORT
+================================================================================
