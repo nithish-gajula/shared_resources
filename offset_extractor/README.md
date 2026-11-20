@@ -11,9 +11,9 @@ When game updates occur (e.g., transition from **v4.6** to **v4.7**, and upcomin
 
 ```text
 shared_resources/offset_extractor/
-├── original_files/          # Reference encrypted zip archives and raw sock64b binaries
-│   ├── xalldatq-v4_6.zip    # v4.6 Reference payload (WinZip AES-256 encrypted)
-│   └── xalldatq-v4_7.zip    # v4.7 Reference payload (PKZIP stream cipher encrypted)
+├── original_files/          # Reference encrypted zip archives and raw sock64b binaries (IMMUTABLE reference baselines)
+│   ├── xalldatq-v4_6.zip    # v4.6 Reference payload (WinZip AES-256 encrypted, read-only)
+│   └── xalldatq-v4_7.zip    # v4.7 Reference payload (PKZIP stream cipher encrypted, read-only)
 ├── generated_offsets/       # Auto-generated formatted offset reports & C++ snippets
 │   ├── offsets_v4_6.txt     # Extracted offsets for v4.6
 │   └── offsets_v4_7.txt     # Extracted offsets for v4.7
@@ -22,6 +22,9 @@ shared_resources/offset_extractor/
 │   └── run.sh               # Executable shell runner wrapper
 └── README.md                # System setup, forensic notes & usage guide
 ```
+
+> [!IMPORTANT]
+> **Strict Immutability Policy**: Files inside `original_files/` serve as ground-truth reference baselines mirroring the reference status of `Originals/`. They can be accessed freely for references, pattern extraction, or static inspection, but **must never be modified, renamed, deleted, or overwritten**.
 
 ---
 

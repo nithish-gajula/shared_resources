@@ -2,7 +2,7 @@
  sock64b REVERSE ENGINEERING ANALYSIS: EXTRACTED OFFSETS REPORT
 ================================================================================
 Source Binary / Archive : xalldatq-v4_7.zip
-Analysis Timestamp       : 2026-11-20 11:13:24
+Analysis Timestamp       : 2026-11-20 11:38:30
 Binary Size              : 539,488 bytes
 SHA-256 Hash             : c95b31ce4a68e658c6550122fb8b6b2cbbbfd126e04bb38e5e344575c10a95e7
 Table Architecture       : Modern v4.7+ (0x08 FNameID shift detected)
