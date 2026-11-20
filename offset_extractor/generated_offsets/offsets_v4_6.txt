@@ -1,0 +1,100 @@
+================================================================================
+ sock64b REVERSE ENGINEERING ANALYSIS: EXTRACTED OFFSETS REPORT
+================================================================================
+Source Binary / Archive : xalldatq-v4_6.zip
+Analysis Timestamp       : 2026-11-20 11:13:18
+Binary Size              : 539,480 bytes
+SHA-256 Hash             : b25d813e2b484fbbc7038fdfe46528f7dbd907fde8e6b6c3b238c3e413cfe945
+Table Architecture       : Legacy v4.6 layout (Direct ShootWeaponEntity)
+Data Table File Offset   : 0x82FD0
+================================================================================
+
+1. REGIONAL GAME BASE ADDRESSES (vMatrix & GNames)
+--------------------------------------------------------------------------------
+Region / Game Package            | Edition Tag     | vMatrix Offset   | GNames Offset
+--------------------------------------------------------------------------------
+com.tencent.ig (Global)          | GAME_GLOBAL     | 0x0F5FBFF0       | 0x0F08F820
+com.pubg.imobile (BGMI)          | GAME_BGMI       | 0x0EDA0470       | 0x0E833D20
+com.vng.pubgmobile (Vietnam)     | GAME_VIETNAM    | 0x0F5FBFF0       | 0x0F08F820
+com.pubg.krmobile (Korea)        | GAME_KOREA      | 0x0F5FBFF0       | 0x0F08F820
+com.rekoo.pubgm (Taiwan)         | GAME_TAIWAN     | 0x0F5FBFF0       | 0x0F08F820
+--------------------------------------------------------------------------------
+
+2. CHARACTER STATE & ACTOR OFFSETS (ASTExtraCharacter)
+--------------------------------------------------------------------------------
+Field / Attribute                    | Hex Offset       | Decimal Value
+--------------------------------------------------------------------------------
+ASTExtraCharacter_TeamID             | 0x000998         | 2456
+ASTExtraCharacter_bIsAI              | 0x000A59         | 2649
+ASTExtraCharacter_Health             | 0x000E60         | 3680
+ASTExtraCharacter_HealthMax          | 0x000E64         | 3684
+ASTExtraCharacter_bDead              | 0x000E7C         | 3708
+ASTExtraCharacter_CurrentWeapon      | 0x001840         | 6208
+ASTExtraCharacter_PlayerName         | 0x000960         | 2400
+ASTExtraCharacter_CameraCache        | 0x00039C         | 924
+ASTExtraCharacter_BoneArray          | 0x000510         | 1296
+ASTExtraCharacter_ComponentToWorld   | 0x0004E8         | 1256
+--------------------------------------------------------------------------------
+
+3. WEAPON & EQUIPMENT OFFSETS (ASTExtraWeapon)
+--------------------------------------------------------------------------------
+Field / Attribute                    | Hex Offset       | Decimal Value
+--------------------------------------------------------------------------------
+ASTExtraWeapon_WeaponEntity          | 0x001380         | 4992
+ASTExtraWeapon_WeaponID              | 0x000134         | 308
+ASTExtraWeapon_CurBulletNum          | 0x0001E0         | 480
+ASTExtraWeapon_WeaponManager         | 0x0001F0         | 496
+--------------------------------------------------------------------------------
+
+4. SKELETAL BONE OFFSETS
+--------------------------------------------------------------------------------
+Bone Node                            | Hex Offset       | Decimal Value
+--------------------------------------------------------------------------------
+Bone_Head                          | 0x000BC8         | 3016
+Bone_Neck                          | 0x000BD0         | 3024
+Bone_Chest                         | 0x000BCC         | 3020
+Bone_Pelvis                        | 0x000C2C         | 3116
+Bone_L_Shoulder                    | 0x000CF0         | 3312
+Bone_R_Shoulder                    | 0x000CF8         | 3320
+Bone_L_Elbow                       | 0x000CF4         | 3316
+Bone_R_Elbow                       | 0x000C08         | 3080
+--------------------------------------------------------------------------------
+
+================================================================================
+ READY-TO-PASTE C++ SOURCE FOR sock64b-project/include/Offsets.h
+================================================================================
+
+/**
+ * Valid UE4 Base Offsets extracted via REA inspection from xalldatq-v4_6.zip:
+ * - Global (com.tencent.ig): vMatrix=0x0F5FBFF0, GNames=0x0F08F820
+ * - BGMI (com.pubg.imobile): vMatrix=0x0EDA0470, GNames=0x0E833D20
+ * - Vietnam (com.vng.pubgmobile): vMatrix=0x0F5FBFF0, GNames=0x0F08F820
+ * - Korea (com.pubg.krmobile): vMatrix=0x0F5FBFF0, GNames=0x0F08F820
+ * - Taiwan (com.rekoo.pubgm): vMatrix=0x0F5FBFF0, GNames=0x0F08F820
+ */
+static const GameOffsets SUPPORTED_GAMES[] = {
+    { "com.tencent.ig", GAME_GLOBAL, 0x0F5FBFF0, 0x0F08F820, 0x0F5FBFF0 },
+    { "com.pubg.imobile", GAME_BGMI, 0x0EDA0470, 0x0E833D20, 0x0EDA0470 },
+    { "com.vng.pubgmobile", GAME_VIETNAM, 0x0F5FBFF0, 0x0F08F820, 0x0F5FBFF0 },
+    { "com.pubg.krmobile", GAME_KOREA, 0x0F5FBFF0, 0x0F08F820, 0x0F5FBFF0 },
+    { "com.rekoo.pubgm", GAME_TAIWAN, 0x0F5FBFF0, 0x0F08F820, 0x0F5FBFF0 },
+};
+
+namespace UE4Offsets {
+    // Player State, Health & Attributes
+    constexpr uintptr_t ASTExtraCharacter_TeamID        = 0x998;
+    constexpr uintptr_t ASTExtraCharacter_bIsAI         = 0xA59;
+    constexpr uintptr_t ASTExtraCharacter_Health        = 0xE60;
+    constexpr uintptr_t ASTExtraCharacter_HealthMax     = 0xE64;
+    constexpr uintptr_t ASTExtraCharacter_bDead         = 0xE7C;
+    constexpr uintptr_t ASTExtraCharacter_CurrentWeapon = 0x1840;
+
+    // Weapon Structs
+    constexpr uintptr_t ASTExtraWeapon_WeaponEntity     = 0x1380;
+    constexpr uintptr_t ASTExtraWeapon_WeaponID         = 0x134;
+    constexpr uintptr_t ASTExtraWeapon_CurBulletNum     = 0x1E0;
+}
+
+================================================================================
+ END OF REPORT
+================================================================================
